@@ -6,21 +6,14 @@ import kotlin.math.abs
 private const val INPUT_FILE_LOCATION = "./src/main/resources/day01/input.txt"
 
 fun main() {
-    var leftList = readInputFile(0);
-    var rightList = readInputFile(1);
+    val leftList = readInputFile(0);
+    val rightList = readInputFile(1);
 
-    var distance = 0;
-    while (leftList.isNotEmpty() && rightList.isNotEmpty()) {
-        val (smallestLeft, leftListWithoutSmallest) = pickSmallestFromList(leftList)
-        val (smallestRight, rightListWithoutSmallest) = pickSmallestFromList(rightList)
+    val distance = calculatePart1Distance(leftList, rightList)
+    val similarityScore = calculatePart2SimilarityScore(leftList, rightList)
 
-        distance += abs(smallestLeft - smallestRight);
-
-        leftList = leftListWithoutSmallest
-        rightList = rightListWithoutSmallest
-    }
-
-    println("Distance $distance")
+    println("Part 1 distance $distance")
+    println("Part 2 similarityScore $similarityScore")
 }
 
 private fun readInputFile(readColumnNumber: Int): List<Int> = File(INPUT_FILE_LOCATION).useLines {
@@ -35,6 +28,23 @@ private fun readInputFile(readColumnNumber: Int): List<Int> = File(INPUT_FILE_LO
         }.toList()
 }
 
+private fun calculatePart1Distance(leftList: List<Int>, rightList: List<Int>): Int {
+    var leftListCopy = leftList.map { it }
+    var rightListCopy = rightList.map { it }
+
+    var distance = 0
+    while (leftListCopy.isNotEmpty() && rightListCopy.isNotEmpty()) {
+        val (smallestLeft, leftListWithoutSmallest) = pickSmallestFromList(leftListCopy)
+        val (smallestRight, rightListWithoutSmallest) = pickSmallestFromList(rightListCopy)
+
+        distance += abs(smallestLeft - smallestRight);
+
+        leftListCopy = leftListWithoutSmallest
+        rightListCopy = rightListWithoutSmallest
+    }
+    return distance;
+}
+
 private fun pickSmallestFromList(list: List<Int>): Pair<Int, List<Int>> {
     val smallest = list.min();
     val listWithoutSmallest = list.toMutableList()
@@ -44,4 +54,13 @@ private fun pickSmallestFromList(list: List<Int>): Pair<Int, List<Int>> {
     return Pair(smallest, listWithoutSmallest)
 }
 
+private fun calculatePart2SimilarityScore(leftList: List<Int>, rightList: List<Int>): Int {
+    var similarityScore = 0
+    leftList.map {
+        left -> val count = rightList.count { it == left}
+        similarityScore += (left * count)
+    }
+
+    return similarityScore;
+}
 
