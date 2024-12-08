@@ -11,8 +11,14 @@ fun main() {
     val resultPart1 = createUpdates(input)
         .filter { update -> isUpdateValid(update, rulesMap) }
         .sumOf { update -> getMiddleNumber(update) }
-
     println("Part1 sum $resultPart1")
+
+
+    val resultPart2 = createUpdates(input)
+        .filter { update -> !isUpdateValid(update, rulesMap) }
+        .map { update -> reOrderInvalidUpdateUntilValid(update, rulesMap) }
+        .sumOf { update -> getMiddleNumber(update) }
+    println("Part1 sum $resultPart2")
 }
 
 private fun createRules(input: List<String>): Map<Int, Set<Int>> {
@@ -62,3 +68,32 @@ private fun numbersAfterBase(update: List<Int>, base: Int): List<Int> =
 
 private fun getMiddleNumber(update: List<Int>): Int =
     update[update.size / 2]
+
+private fun reOrderInvalidUpdateUntilValid(update: List<Int>, rules: Map<Int, Set<Int>>): List<Int> {
+    if (isUpdateValid(update, rules)) {
+        return update
+    }
+
+    val invalidRule = findFirstInvalidRule(update, rules)
+    return reOrderInvalidUpdateUntilValid(
+        reOrderInList(invalidRule.second, invalidRule.first, update),
+        rules
+    )
+}
+
+private fun findFirstInvalidRule(update: List<Int>, rules: Map<Int, Set<Int>>): Pair<Int, Int> =
+    update
+        .firstNotNullOf {
+            updateValue -> val firstInvalidValue = numbersAfterBase(update, updateValue)
+                .firstOrNull { it in (rules[updateValue] ?: emptySet()) }
+            firstInvalidValue?.let { Pair(firstInvalidValue, updateValue) }
+        }
+
+private fun reOrderInList(number1: Int, number2: Int, list: List<Int>): List<Int> {
+    // In the 'list' move 'number2' directly before `number1` and create a new list.
+
+    val elementsBeforeNumber1 = list.subList(0, list.indexOf(number1))
+    val elementsFromNumber1ToEndWithoutNumber2 = list.subList(list.indexOf(number1), list.size)
+        .filter { it != number2 }
+    return elementsBeforeNumber1 + number2 + elementsFromNumber1ToEndWithoutNumber2
+}
