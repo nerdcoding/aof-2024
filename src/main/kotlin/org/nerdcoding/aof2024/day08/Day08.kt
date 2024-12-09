@@ -8,10 +8,11 @@ val inputLines = File(INPUT_FILE_LOCATION).readLines()
 val frequencyPoints = readInputFile()
 
 fun main() {
-    val resultPart1 = countAntiNodes(::generateAntiNodes)
+    val resultPart1 = countAntiNodes(::generateAntiNodesPart1)
+    val resultPart2 = countAntiNodes(::generateAntiNodesPart2)
 
     println("Result part1 $resultPart1")
-
+    println("Result part2 $resultPart2")
 }
 
 private fun readInputFile(): Map<Char, List<Pair<Int, Int>>> {
@@ -38,7 +39,7 @@ private fun countAntiNodes(generator: (Pair<Int, Int>, Pair<Int, Int>, Pair<Int,
         }.filter { it.isOnOriginalGrid() }
     }.toSet().size
 
-private fun generateAntiNodes(
+private fun generateAntiNodesPart1(
         point1: Pair<Int, Int>,
         point2: Pair<Int, Int>,
         diff: Pair<Int, Int>): Set<Pair<Int, Int>> =
@@ -48,6 +49,15 @@ private fun generateAntiNodes(
         setOf(point1 + diff, point2 - diff)
     }
 
+private fun generateAntiNodesPart2(
+        point1: Pair<Int, Int>,
+        point2: Pair<Int, Int>,
+        diff: Pair<Int, Int>): Set<Pair<Int, Int>> =
+    generateSequence(point1) { it - diff }
+        .takeWhile { it.isOnOriginalGrid() }
+        .toSet() + generateSequence(point1) { it + diff }
+            .takeWhile { it.isOnOriginalGrid() }
+            .toSet()
 
 fun Pair<Int, Int>.isOnOriginalGrid(): Boolean =
     second in inputLines.indices && first in inputLines[second].indices
