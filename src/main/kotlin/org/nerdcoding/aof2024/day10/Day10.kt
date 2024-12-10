@@ -8,13 +8,14 @@ private const val INPUT_FILE_LOCATION = "./src/main/resources/day10/input.txt"
 
 fun main() {
     val matrix = readInputFile()
-    val paths = findPathsBFS(matrix)
-    printResult(paths)
+    // part 1
+    val pathsPart1 = findPathsBFS(matrix, false)
+    printPaths(pathsPart1)
+    println("Result part1: ${calculateResult(pathsPart1)}")
 
-    val result = paths.values
-        .map { it.size }
-        .sumOf { it }
-    println("Result part1: $result")
+    // part 2
+    val pathsPart2 = findPathsBFS(matrix, true)
+    println("Result part2: ${calculateResult(pathsPart2)}")
 }
 
 private fun readInputFile(): Array<IntArray> =
@@ -27,13 +28,14 @@ private fun readInputFile(): Array<IntArray> =
             }.toList().toTypedArray()
         }
 
-private fun findPathsBFS(matrix: Array<IntArray>): Map<Pair<Int, Int>, MutableList<List<Pair<Int, Int>>>> {
+private fun findPathsBFS(
+        matrix: Array<IntArray>,
+        ignoreVisitedPaths: Boolean): Map<Pair<Int, Int>, MutableList<List<Pair<Int, Int>>>> {
     val directions = listOf(Pair(0, 1), Pair(1, 0), Pair(0, -1), Pair(-1, 0)) // allowed movement directions
     // Key: start point
     //      -> MutableList: contains all possible paths from the start point
     //              -> List: contains all points of a specific paths
     val pathsByStartPoint = mutableMapOf<Pair<Int, Int>, MutableList<List<Pair<Int, Int>>>>()
-    //val paths = mutableListOf<List<Pair<Int, Int>>>()
 
     val startPoints = mutableListOf<Pair<Int, Int>>()
     for (i in matrix.indices) {
@@ -67,7 +69,9 @@ private fun findPathsBFS(matrix: Array<IntArray>): Map<Pair<Int, Int>, MutableLi
                     val nextValue = matrix[nx][ny]
 
                     if (nextValue > currentValue && nextValue - currentValue <= 1 && Pair(nx, ny) !in visited) {
-                        visited.add(Pair(nx, ny))
+                        if (!ignoreVisitedPaths) {
+                            visited.add(Pair(nx, ny))
+                        }
                         queue.add(Pair(Pair(nx, ny), path + Pair(nx, ny)))
                     }
                 }
@@ -77,7 +81,7 @@ private fun findPathsBFS(matrix: Array<IntArray>): Map<Pair<Int, Int>, MutableLi
     return pathsByStartPoint
 }
 
-private fun printResult(paths: Map<Pair<Int, Int>, MutableList<List<Pair<Int, Int>>>>) {
+private fun printPaths(paths: Map<Pair<Int, Int>, MutableList<List<Pair<Int, Int>>>>) {
     for ((key, value) in paths) {
         println("Key: $key")
         println("Value:")
@@ -85,4 +89,10 @@ private fun printResult(paths: Map<Pair<Int, Int>, MutableList<List<Pair<Int, In
             println("  List: $list")
         }
     }
+    println('\n')
 }
+
+private fun calculateResult(paths: Map<Pair<Int, Int>, MutableList<List<Pair<Int, Int>>>>) =
+    paths.values
+        .map { it.size }
+        .sumOf { it }
