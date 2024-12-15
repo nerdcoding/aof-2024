@@ -1,6 +1,7 @@
 package org.nerdcoding.aof2024.day14
 
 import java.io.File
+import java.io.PrintStream
 import kotlin.math.abs
 
 private const val INPUT_FILE_LOCATION = "./src/main/resources/day14/input.txt"
@@ -9,16 +10,23 @@ private const val sizeX = 101
 private const val sizeY = 103
 
 fun main() {
-    var robots = readInputFile()
-    printRobots(robots)
+    // Part2: print all positions to output file and search for ester egg
+    val outputFile = File("output1.txt")
+    PrintStream(outputFile).use { fileStream ->
+        System.setOut(fileStream)
 
-    repeat(100) { index ->
-        robots = moveRobots(robots)
-        println("INDEX ${index}")
+        var robots = readInputFile()
         printRobots(robots)
+
+        repeat(10000) { index ->
+            robots = moveRobots(robots)
+            println("INDEX $index")
+            printRobots(robots)
+        }
+
+        println("Result part1: ${calculateSafetyFactor(robots)}")
     }
 
-    println("Result part1: ${calculateSafetyFactor(robots)}")
 }
 
 private fun moveRobots(robots: List<Robot>) =
