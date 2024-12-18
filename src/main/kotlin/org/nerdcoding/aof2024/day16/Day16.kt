@@ -14,27 +14,36 @@ fun main() {
     val endPoint = findPointForChar('E', maze)
 
     val result = dijkstraSearch(startPoint, endPoint, maze)
-    println("Part 1: $result")
+    println("Part 1: ${result.score}")
+    println("Part 2: ${result.steps}")
 }
 
-private fun dijkstraSearch(start: Point, end: Point, maze: List<String>): Long {
+private fun dijkstraSearch(start: Point, end: Point, maze: List<String>): Result {
     val visited = HashSet<ReindeerLocation>()
     val scores = HashMap<ReindeerLocation, Long>()
-    val queue = PriorityQueue<Pair<ReindeerLocation, Long>>(compareBy { it.second })
-    queue.add(ReindeerLocation(start, Direction.EAST, 0) to 0)
+    val queue = PriorityQueue<Pair<List<ReindeerLocation>, Long>>(compareBy { it.second })
+    queue.add(listOf<ReindeerLocation>(ReindeerLocation(start, Direction.EAST, 0)) to 0)
 
+    var min = Long.MAX_VALUE
+    val best = HashSet<Point>()
     while (queue.isNotEmpty()) {
         val (currentLocation, score) = queue.poll()
-        if (currentLocation.position == end) {
-            return score
+        if (currentLocation.last().position == end) {
+            if (score <= min) {
+                min = score
+            } else {
+                best.addAll(currentLocation.map { it.position })
+                return Result(score, best.size)
+            }
+            best.addAll(currentLocation.map { it.position })
         }
 
-        if (visited.contains(currentLocation)) {
+        if (visited.contains(currentLocation.last())) {
             continue
         }
-        visited.add(currentLocation)
+        visited.add(currentLocation.last())
 
-        val nextPossibleSteps = currentLocation.findNextPossibleSteps()
+        val nextPossibleSteps = currentLocation.last().findNextPossibleSteps()
         for (nextStep in nextPossibleSteps) {
             if (findCharAtPoint(nextStep.position, maze) == '#' || visited.contains(nextStep)) {
                 continue
@@ -42,11 +51,11 @@ private fun dijkstraSearch(start: Point, end: Point, maze: List<String>): Long {
             val nextScore = score + nextStep.cost
             if (nextScore < scores.getOrDefault(nextStep, Long.MAX_VALUE)) {
                 scores[nextStep] = nextScore
-                queue.add(nextStep to nextScore)
+                queue.add((currentLocation + nextStep) to nextScore)
             }
         }
     }
-    return Long.MAX_VALUE
+    return Result(Long.MAX_VALUE, 0)
 }
 
 private fun findCharAtPoint(point: Point, maze: List<String>): Char =
@@ -61,6 +70,8 @@ private fun findPointForChar(char: Char, maze: List<String>): Point =
 
 private fun readInputFile(): List<String> =
     File(INPUT_FILE_LOCATION).readLines().reversed()
+
+private data class Result(val score: Long, val steps: Int)
 
 private enum class Direction { NORTH, EAST, SOUTH, WEST }
 private data class Point(val x: Int, val y: Int)
